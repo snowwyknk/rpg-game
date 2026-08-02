@@ -43,6 +43,10 @@ class Player:
         asset_dir = os.path.normpath(os.path.join(base_dir, os.pardir))
         frames = {"idle": [], "walk": [], "run": []}
         
+        # Инициализируем pygame.display если нужно для загрузки изображений
+        if pygame.display.get_surface() is None:
+            pygame.display.set_mode((1, 1))
+        
         try:
             for filename in sorted(os.listdir(asset_dir)):
                 name = filename.lower()
@@ -119,7 +123,7 @@ class Player:
         else:
             self.bob_offset = 0
 
-    def update(self, dt, keys, world, interactables=None):
+    def update(self, dt, keys, world, interactables=None, game=None):
         dx, dy = 0, 0
         if keys[pygame.K_w]: dy -= 1
         if keys[pygame.K_s]: dy += 1
@@ -150,8 +154,11 @@ class Player:
             if not self.check_collision(0, move_y, world):
                 self.y += move_y
 
-        if interactables and keys[pygame.K_e]:
-            self.handle_interaction(interactables)
+        # Обработка взаимодействия только при однократном нажатии
+        if interactables and keys[pygame.K_e] and game:
+            if not game.interact_key_pressed:
+                game.interact_key_pressed = True
+                self.handle_interaction(interactables)
 
     def handle_interaction(self, interactables):
         player_rect = self.get_rect().inflate(40, 40)

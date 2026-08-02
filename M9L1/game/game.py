@@ -24,11 +24,14 @@ class Game:
         self.player = Player(200, 200)
         self.camera = Camera(WIDTH, HEIGHT)
         
-        # Добавляем Джексона и Сундук
+        # Добавляем Джексона и Сундук (координаты в тайлах, конвертируем в пиксели)
         self.interactables = [
             NPC(10, 10, "Джексон"),
             Chest(15, 15)
         ]
+        
+        # Флаг для обработки однократного нажатия клавиши взаимодействия
+        self.interact_key_pressed = False
 
     def run(self):
         while self.running:
@@ -68,7 +71,12 @@ class Game:
     def update(self, dt):
         if self.state != "playing": return
         keys = pygame.key.get_pressed()
-        self.player.update(dt, keys, self.world, self.interactables)
+        
+        # Сбрасываем флаг нажатия клавиши взаимодействия при отпускании клавиши
+        if not keys[pygame.K_e]:
+            self.interact_key_pressed = False
+        
+        self.player.update(dt, keys, self.world, self.interactables, self)
         self.camera.update((self.player.x, self.player.y), self.world.pixel_width, self.world.pixel_height)
 
     def draw(self):
